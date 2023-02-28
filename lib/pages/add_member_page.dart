@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:teams_maker/components/back_button.dart';
 import 'package:teams_maker/components/button.dart';
+import 'package:teams_maker/models/member.dart';
+import 'package:uuid/uuid.dart';
 
-class AddMemberPage extends StatelessWidget {
+class AddMemberPage extends StatefulWidget {
   const AddMemberPage({super.key});
+
+  @override
+  State<AddMemberPage> createState() => _AddMemberPageState();
+}
+
+class _AddMemberPageState extends State<AddMemberPage> {
+  final nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +25,7 @@ class AddMemberPage extends StatelessWidget {
             const TmBackButton(),
             const SizedBox(height: 47),
             TextField(
+              controller: nameController,
               style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
               cursorColor: Colors.black,
               decoration: InputDecoration(
@@ -28,7 +38,20 @@ class AddMemberPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 64),
-            const MyButton(title: 'Add Member'),
+            MyButton(
+              title: 'Add Member',
+              onTap: () {
+                final newMember = Member(
+                  id: const Uuid().v4(),
+                  name: nameController.text,
+                  preferredMembersIds: [],
+                  unpreferredMembersIds: [],
+                );
+
+                Member.collection().doc(newMember.id).set(newMember);
+                Navigator.pop(context);
+              },
+            ),
           ],
         ),
       ),
