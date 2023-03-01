@@ -168,11 +168,6 @@ class _$_Member extends _Member {
   }
 
   @override
-  String toString() {
-    return 'Member(id: $id, name: $name, preferredMembersIds: $preferredMembersIds, unpreferredMembersIds: $unpreferredMembersIds)';
-  }
-
-  @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&

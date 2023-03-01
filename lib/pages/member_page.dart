@@ -5,7 +5,6 @@ import 'package:teams_maker/components/back_button.dart';
 import 'package:teams_maker/components/member_card.dart';
 import 'package:teams_maker/components/title.dart';
 import 'package:teams_maker/models/member.dart';
-import 'package:teams_maker/pages/home_page.dart';
 import 'package:teams_maker/pages/select_member_page.dart';
 
 class MemberPage extends StatelessWidget {
@@ -27,14 +26,8 @@ class MemberPage extends StatelessWidget {
 
             final currentMember = snapshot.data!.data()!;
 
-            return StreamBuilder(
-              stream: Member.collectionOrdered().toListStream(),
-              builder: (context, snapshot) {
-                if (snapshot.data == null) {
-                  return const LoadingIndicator(size: 50, borderWidth: 1);
-                }
-
-                final members = snapshot.data ?? [];
+            return MembersStream(
+              builder: (context, members) {
                 final preferredMembers =
                     members.where((m) => currentMember.preferredMembersIds.contains(m.id)).toList();
                 final unpreferredMembers =
@@ -83,8 +76,8 @@ class MemberPage extends StatelessWidget {
                       children: [
                         const MyTitle('Unpreferred Members:'),
                         AddIcon(
-                          onTap: () {
-                            showModalBottomSheet(
+                          onTap: () async {
+                            final result = await showModalBottomSheet(
                               context: context,
                               builder: (_) =>
                                   SelectMemberPage(currentMember: currentMember, addToPreferredMembers: false),

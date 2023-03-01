@@ -135,11 +135,6 @@ class _$_Team extends _Team {
   }
 
   @override
-  String toString() {
-    return 'Team(id: $id, name: $name, members: $members)';
-  }
-
-  @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&

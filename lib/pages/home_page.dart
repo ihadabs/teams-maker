@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:teams_maker/components/add_icon.dart';
 import 'package:teams_maker/components/button.dart';
@@ -8,6 +9,7 @@ import 'package:teams_maker/components/member_card.dart';
 import 'package:teams_maker/components/title.dart';
 import 'package:teams_maker/models/member.dart';
 import 'package:teams_maker/pages/add_member_page.dart';
+import 'package:teams_maker/pages/teams_page.dart';
 import 'package:teams_maker/utils/gen_team.dart';
 
 // const members = [
@@ -30,47 +32,58 @@ class HomePage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: StreamBuilder(
-          stream: Member.collectionOrdered().toListStream(),
-          builder: (context, snapshot) {
-            if (snapshot.data == null) {
-              return const LoadingIndicator(size: 50, borderWidth: 1);
-            }
-
-            final members = snapshot.data ?? [];
-
-            return ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                const Logo(),
-                const SizedBox(height: 35),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              final user = snapshot.data;
+              if (user == null) {
+                return Column(
                   children: [
-                    MyTitle('All members (${members.length}):'),
-                    AddIcon(
+                    MyButton(
+                      title: 'Login',
                       onTap: () {
-                        context.openPage(const AddMemberPage());
+                        FirebaseAuth.instance.signInAnonymously();
                       },
-                    )
+                    ),
                   ],
-                ),
-                const SizedBox(height: 24),
-                for (final member in members) ...[
-                  DismissibleMemberCard(member),
-                  const SizedBox(height: 10),
-                ],
-                const SizedBox(height: 24),
-                MyButton(
-                  title: 'Generate Teams (${members.length / 3})',
-                  onTap: () {
-                    final teams = genTeams(members);
-                    // context.openPage(TeamsPage(teams));
-                  },
-                ),
-              ],
-            );
-          },
-        ),
+                );
+              }
+              return MembersStream(
+                builder: (context, members) {
+                  return ListView(
+                    padding: const EdgeInsets.all(24),
+                    children: [
+                      const Logo(),
+                      const SizedBox(height: 35),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          MyTitle('All members (${members.length}):'),
+                          AddIcon(
+                            onTap: () {
+                              context.openPage(const AddMemberPage());
+                            },
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      for (final member in members) ...[
+                        DismissibleMemberCard(member),
+                        const SizedBox(height: 10),
+                      ],
+                      const SizedBox(height: 24),
+                      MyButton(
+                        title: 'Generate Teams (${members.length / 3})',
+                        onTap: () async {
+                          final teams = await compute(genTeams, members);
+                          // ignore: use_build_context_synchronously
+                          context.openPage(TeamsPage(teams));
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }),
       ),
     );
   }

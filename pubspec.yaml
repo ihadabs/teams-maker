@@ -23,6 +23,9 @@ dependencies:
     json_annotation: ^4.8.0
     uuid: ^3.0.7
     trotter: ^2.0.0
+    collection:
+    flutter_hooks: ^0.18.6
+    hooks_riverpod: ^2.3.0
 
 dev_dependencies:
     flutter_test:

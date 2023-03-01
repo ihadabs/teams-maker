@@ -1,9 +1,7 @@
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:teams_maker/components/member_card.dart';
 import 'package:teams_maker/components/title.dart';
 import 'package:teams_maker/models/member.dart';
-import 'package:teams_maker/pages/home_page.dart';
 
 class SelectMemberPage extends StatelessWidget {
   const SelectMemberPage({super.key, required this.currentMember, this.addToPreferredMembers = true});
@@ -24,14 +22,9 @@ class SelectMemberPage extends StatelessWidget {
               children: const [MyTitle('Select member:')],
             ),
             const SizedBox(height: 24),
-            StreamBuilder(
-              stream: Member.collectionOrdered().toListStream(),
-              builder: (context, snapshot) {
-                if (snapshot.data == null) {
-                  return const LoadingIndicator(size: 50, borderWidth: 1);
-                }
-
-                final members = (snapshot.data ?? []).where((m) => m.id != currentMember.id).toList();
+            MembersStream(
+              builder: (context, allMembers) {
+                final members = allMembers.where((m) => m.id != currentMember.id).toList();
                 final membersToShow = members
                     .where(
                       (m) =>
@@ -66,7 +59,7 @@ class SelectMemberPage extends StatelessWidget {
                             Member.collection().doc(currentMember.id).set(newCurrentMember);
                           }
 
-                          Navigator.pop(context);
+                          Navigator.pop(context, true);
                         },
                       ),
                       const SizedBox(height: 10),
