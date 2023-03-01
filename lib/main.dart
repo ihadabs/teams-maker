@@ -19,6 +19,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'Teams Maker',
       theme: ThemeData(primarySwatch: Colors.red),
+      debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );
   }

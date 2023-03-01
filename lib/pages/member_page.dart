@@ -25,7 +25,7 @@ class MemberPage extends StatelessWidget {
               return const LoadingIndicator(size: 50, borderWidth: 4);
             }
 
-            final member = snapshot.data!.data()!;
+            final currentMember = snapshot.data!.data()!;
 
             return StreamBuilder(
               stream: Member.collectionOrdered().toListStream(),
@@ -35,15 +35,17 @@ class MemberPage extends StatelessWidget {
                 }
 
                 final members = snapshot.data ?? [];
-                final preferredMembers = members.where((m) => member.preferredMembersIds.contains(m.id)).toList();
-                final unpreferredMembers = members.where((m) => member.unpreferredMembersIds.contains(m.id)).toList();
+                final preferredMembers =
+                    members.where((m) => currentMember.preferredMembersIds.contains(m.id)).toList();
+                final unpreferredMembers =
+                    members.where((m) => currentMember.unpreferredMembersIds.contains(m.id)).toList();
 
                 return ListView(
                   padding: const EdgeInsets.all(24),
                   children: [
                     const TmBackButton(),
                     const SizedBox(height: 47),
-                    MemberCard(member, isClickable: false),
+                    MemberCard(currentMember, isClickable: false),
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -52,22 +54,29 @@ class MemberPage extends StatelessWidget {
                         AddIcon(
                           onTap: () {
                             showModalBottomSheet(
-                                context: context, builder: (_) => SelectMemberPage(currentMember: member));
+                                context: context, builder: (_) => SelectMemberPage(currentMember: currentMember));
                           },
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
-                    ListView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        for (final member in preferredMembers) ...[
-                          MemberCard(member),
-                          const SizedBox(height: 10),
-                        ],
-                      ],
-                    ),
+                    for (final member in preferredMembers) ...[
+                      DismissibleMemberCard(
+                        member,
+                        isClickable: false,
+                        onDismissed: () {
+                          final newCurrentMember = currentMember.copyWith(
+                            preferredMembersIds: currentMember.preferredMembersIds
+                                .where(
+                                  (mId) => mId != member.id,
+                                )
+                                .toList(),
+                          );
+                          Member.collection().doc(currentMember.id).set(newCurrentMember);
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,23 +86,31 @@ class MemberPage extends StatelessWidget {
                           onTap: () {
                             showModalBottomSheet(
                               context: context,
-                              builder: (_) => SelectMemberPage(currentMember: member, addToPreferredMembers: false),
+                              builder: (_) =>
+                                  SelectMemberPage(currentMember: currentMember, addToPreferredMembers: false),
                             );
                           },
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
-                    ListView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        for (final member in unpreferredMembers) ...[
-                          MemberCard(member),
-                          const SizedBox(height: 10),
-                        ],
-                      ],
-                    ),
+                    for (final member in unpreferredMembers) ...[
+                      DismissibleMemberCard(
+                        member,
+                        isClickable: false,
+                        onDismissed: () {
+                          final newCurrentMember = currentMember.copyWith(
+                            unpreferredMembersIds: currentMember.unpreferredMembersIds
+                                .where(
+                                  (mId) => mId != member.id,
+                                )
+                                .toList(),
+                          );
+                          Member.collection().doc(currentMember.id).set(newCurrentMember);
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     const SizedBox(height: 24),
                   ],
                 );

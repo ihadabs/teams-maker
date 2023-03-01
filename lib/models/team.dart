@@ -16,6 +16,12 @@ class Team with _$Team {
 
   factory Team.fromJson(Map<String, Object?> json) => _$TeamFromJson(json);
 
+  bool doYouHaveMember(Member member) {
+    if (members.contains(member)) return true;
+
+    return false;
+  }
+
   static CollectionReference<Team> collection() => FirebaseFirestore.instance
       .collection('team')
       .withConverter<Team>(fromFirestore: Team.fromFirestore, toFirestore: Team.toFirestore);

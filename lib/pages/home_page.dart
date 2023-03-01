@@ -7,10 +7,8 @@ import 'package:teams_maker/components/logo.dart';
 import 'package:teams_maker/components/member_card.dart';
 import 'package:teams_maker/components/title.dart';
 import 'package:teams_maker/models/member.dart';
-import 'package:teams_maker/models/team.dart';
 import 'package:teams_maker/pages/add_member_page.dart';
-import 'package:teams_maker/pages/teams_page.dart';
-import 'package:uuid/uuid.dart';
+import 'package:teams_maker/utils/gen_team.dart';
 
 // const members = [
 //   Member(id: '1', name: 'Mohammed', preferredMembersIds: [], unpreferredMembersIds: []),
@@ -57,37 +55,16 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
-                ListView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    for (final member in members) ...[
-                      MemberCard(member),
-                      const SizedBox(height: 10),
-                    ],
-                  ],
-                ),
+                for (final member in members) ...[
+                  DismissibleMemberCard(member),
+                  const SizedBox(height: 10),
+                ],
                 const SizedBox(height: 24),
                 MyButton(
                   title: 'Generate Teams (${members.length / 3})',
                   onTap: () {
-                    final newMembers = List.from(members);
-                    newMembers.shuffle();
-
-                    List<Team> teams = [];
-                    var i = 0;
-                    var teamNumber = 1;
-                    var team = Team(id: const Uuid().v4(), name: '$teamNumber', members: []);
-                    for (; i < newMembers.length; i++) {
-                      team = team.copyWith(members: [...team.members, newMembers[i]]);
-                      final x = i + 1;
-                      if (x % 3 == 0) {
-                        teams.add(team);
-                        teamNumber++;
-                        team = Team(id: const Uuid().v4(), name: '$teamNumber', members: []);
-                      }
-                    }
-                    context.openPage(TeamsPage(teams));
+                    final teams = genTeams(members);
+                    // context.openPage(TeamsPage(teams));
                   },
                 ),
               ],
